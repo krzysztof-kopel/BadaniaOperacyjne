@@ -1,6 +1,9 @@
-# BadaniaOperacyjne
+# Badania Operacyjne
 
 Jan Gawroński, Krzysztof Kopel, Witold Nieć, Jakub Szewczyk
 ---
 
 Problem optymalizacyjny, rozwiązywany w ramach laboratoriów z przedmiotu "Badania Operacyjne" w semestrze letnim 25/26 - optymalizacja planu zajęć na uczelni.
+
+---
+Model matematyczny: [LINK](https://github.com/krzysztof-kopel/BadaniaOperacyjne/blob/main/model.pdf) 
