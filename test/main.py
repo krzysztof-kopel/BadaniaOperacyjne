@@ -16,5 +16,8 @@ for i in range(2, SUBJECT_COUNT, 2):
 generator = Generator(problemInstance)
 
 solution = generator.generateBaseSolution()
+solution.sort(key=lambda x: 100 * x.day + x.hour)
 
-print(solution)
+print("Wygenerowany plan:")
+for lesson in solution:
+    print(lesson)

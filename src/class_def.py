@@ -13,7 +13,8 @@ class Class:
         self.day = day
 
     def __str__(self):
-        return f""
+        weekdays = {1: "Poniedziałek", 2: "Wtorek", 3: "Środa", 4: "Czwartek", 5: "Piątek"}
+        return f"{weekdays[self.day]}, slot {self.hour}: {self.subject} (nauczyciel {self.teacher}; sala {self.classroom})"
 
     def __repr__(self):
         return f"Class(teacher={self.teacher}, subject={self.subject}, classroom={self.classroom}, hour={self.hour}, day={self.day})"
