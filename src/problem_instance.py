@@ -1,4 +1,4 @@
-from Class import Class
+from src.class_def import Class
 
 
 class ProblemInstance:

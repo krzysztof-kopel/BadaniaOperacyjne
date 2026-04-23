@@ -1,5 +1,5 @@
-from GenerateSolution import Generator
-from ProblemInstance import ProblemInstance
+from src.generator1 import Generator
+from src.problem_instance import ProblemInstance
 
 TEACHER_COUNT = 4
 SUBJECT_COUNT = 8
