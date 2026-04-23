@@ -1,4 +1,4 @@
-from GenerateBaseSolution import Generator
+from GenerateSolution import Generator
 from ProblemInstance import ProblemInstance
 
 TEACHER_COUNT = 4
