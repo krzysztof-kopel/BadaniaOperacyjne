@@ -1,5 +1,5 @@
-from validator import *
-from utils import encode_solution
+from src.validator import *
+from src.utils import encode_solution
 from copy import deepcopy
 import random
 

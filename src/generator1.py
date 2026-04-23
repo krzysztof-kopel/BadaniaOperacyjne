@@ -1,4 +1,4 @@
-from problem_instance import ProblemInstance
+from src.problem_instance import ProblemInstance
 from random import choice
 from src.class_def import Class
 MAX_GEN_ITERATIONS = 10e6
