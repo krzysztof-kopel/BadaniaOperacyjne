@@ -2,8 +2,8 @@ from enum import Enum
 from collections import Counter
 from typing import Any
 
-from Class import Class
-from ProblemInstance import ProblemInstance
+from src.class_def import Class
+from src.problem_instance import ProblemInstance
 
 class Validation(Enum):
     CORRECT = 0

@@ -12,6 +12,9 @@ class Class:
         self.hour = hour
         self.day = day
 
+    def __str__(self):
+        return f""
+
     def __repr__(self):
         return f"Class(teacher={self.teacher}, subject={self.subject}, classroom={self.classroom}, hour={self.hour}, day={self.day})"
 
