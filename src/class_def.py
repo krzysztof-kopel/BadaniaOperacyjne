@@ -1,11 +1,9 @@
-from typing import Literal
-
 class Class:
     """
     Klasa reprezentująca pojedyncze zajęcia (połączenie nauczyciel-przedmiot-sala-godzina-dzień, małe "i" w naszym
     modelu).
     """
-    def __init__(self, teacher: int, subject: int, classroom: int, hour: int, day: Literal[1, 2, 3, 4, 5]):
+    def __init__(self, teacher: int, subject: int, classroom: int, hour: int, day: int):
         self.teacher = teacher
         self.subject = subject
         self.classroom = classroom

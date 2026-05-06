@@ -1,4 +1,4 @@
-from src.generator1 import Generator
+from src.generators import OrdinalGenerator
 from src.problem_instance import ProblemInstance
 
 TEACHER_COUNT = 4
@@ -13,9 +13,9 @@ for i in range(SUBJECT_COUNT):
 for i in range(2, SUBJECT_COUNT, 2):
     problemInstance.add_teacher_subject_pair(i//2 - 1, i)
     problemInstance.add_teacher_subject_pair(i//2, i - 1)
-generator = Generator(problemInstance)
+generator = OrdinalGenerator(problemInstance)
 
-solution = generator.generateBaseSolution()
+solution = generator.generate()
 solution.sort(key=lambda x: 100 * x.day + x.hour)
 
 print("Wygenerowany plan:")

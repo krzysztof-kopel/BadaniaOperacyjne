@@ -1,5 +1,5 @@
 from src.problem_instance import ProblemInstance
-from src.generator2 import main as generate
+from src.generators import RandomGenerator
 
 def make_bigger_instance() -> ProblemInstance:
     # Bigger but still easy-feasible:
@@ -69,4 +69,12 @@ def make_bigger_instance() -> ProblemInstance:
 if __name__ == "__main__":
     inst = make_bigger_instance()
     print(inst)
-    generate(inst, filename="../solutions/test")
+    generator = RandomGenerator(inst)
+    solution = generator.generate()
+
+    print(generator.problemInstance)
+    if solution:
+        for p in solution:
+            print(p)
+    else:
+        print("Failed to generate a valid solution.")
