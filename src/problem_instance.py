@@ -1,4 +1,4 @@
-from Class import Class
+from src.class_def import Class
 
 
 class ProblemInstance:
@@ -76,4 +76,7 @@ class ProblemInstance:
         self.classroom_subject[classroom].append(subject)
 
     def __str__(self):
-        return f"ProblemInstance(teacher_num={self.teacher_num}, subjects_num={self.subjects_num}, classrooms_num={self.classrooms_num}, time_slots_num={self.time_slots_num})"
+        title = f"ProblemInstance(teacher_num={self.teacher_num}, subjects_num={self.subjects_num}, classrooms_num={self.classrooms_num}, time_slots_num={self.time_slots_num})"
+        if self.best_solution is None:
+            return title
+        return title + "\n".join(self.best_solution)
