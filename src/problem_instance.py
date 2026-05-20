@@ -91,7 +91,7 @@ class ProblemInstance:
         teacher_day_lessons = [[0] * 5 for _ in range(self.teacher_num)]
         for cls in solution:
             teacher_counters[cls.teacher] += 1
-            teacher_day_lessons[cls.teacher][cls.day] += 1
+            teacher_day_lessons[cls.teacher][cls.day - 1] += 1
 
         cost = 0
         for t in range(self.teacher_num):

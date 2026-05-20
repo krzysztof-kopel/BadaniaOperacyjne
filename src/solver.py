@@ -9,15 +9,21 @@ class Solver:
     def __init__(self, initial_problem: ProblemInstance):
         self.problem_instance = initial_problem
 
-    def optimize(self, initial_solution: list[Class], generations: int=10, children_num: int=5, accept_worse: bool=True) -> list[Class]:
+    def optimize(self, initial_solution: list[Class], generations: int=10, children_num: int=5, accept_worse: bool=True,
+                 verbose: bool=False) -> list[Class]:
         """
         Optymalizuje plan lekcji za pomocą algorytmu genetycznego.
         :param initial_solution: Początkowe rozwiązanie, które będzie ulepszane.
         :param generations: Liczba pokoleń do wygenerowania.
         :param children_num: Liczba nowych rozwiązań do wygenerowania w każdym pokoleniu.
         :param accept_worse: Czy akceptować rozwiązania o większej wartości funkcji kosztu?
+        :param verbose: Czy wypisywać stan obliczeń?
         :return: Najlepsze znalezione rozwiązanie.
         """
+        if generations == 0:
+            print(f"Znaleziono rozwiązanie o koszcie {self.problem_instance.cost_function(initial_solution)}")
+            return initial_solution
+
         current_solution = initial_solution
         if not validate_solution(current_solution, self.problem_instance):
             raise ValueError("Initial solution is not valid.")
@@ -30,13 +36,16 @@ class Solver:
         better_solutions = better_solutions[:3]
         if not better_solutions:
             better_solutions = [min(new_solutions, key=lambda s: self.problem_instance.cost_function(s))]
+        if verbose:
+            print(f"Koszty rozwiązań na {generations} generacji przed końcem: {[self.problem_instance.cost_function(i) for i in better_solutions]}")
 
-        children_results = [(s, self.optimize(s, generations - 1, children_num, accept_worse)) for s in better_solutions]
+        children_results = [(s, self.optimize(s, generations - 1, children_num, accept_worse, verbose=verbose)) for s in better_solutions]
 
         best_child_solution = min(children_results, key=lambda r: self.problem_instance.cost_function(r[1]))[1]
         if self.problem_instance.cost_function(best_child_solution) < self.problem_instance.cost_function(current_solution):
             current_solution = best_child_solution
-            self.problem_instance.best_solution = current_solution
+            if self.problem_instance.best_solution and self.problem_instance.cost_function(self.problem_instance.best_solution) > self.problem_instance.cost_function(current_solution):
+                self.problem_instance.best_solution = current_solution
         return current_solution
 
     def get_next_generation(self, current_solution: list[Class], children_num: int, accept_worse: bool=True, class_matrix: np.ndarray | None = None) -> list[list[Class]]:
@@ -70,7 +79,7 @@ class Solver:
                         continue
                     new_teacher = random.choice(self.problem_instance.subject_teacher[class_to_change.subject])
                     if (new_teacher == class_to_change.teacher
-                           or any(class_matrix[new_teacher, :, :, class_to_change.hour, class_to_change.day - 1])):
+                           or class_matrix[new_teacher, :, :, class_to_change.hour, class_to_change.day - 1].any()):
                         continue
 
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][class_to_change.day - 1] = False
@@ -81,7 +90,7 @@ class Solver:
                         continue
                     new_classroom = random.choice(self.problem_instance.subject_classroom[class_to_change.subject])
                     if (new_classroom == class_to_change.classroom
-                           or any(class_matrix[:, :, new_classroom, class_to_change.hour, class_to_change.day - 1])):
+                           or class_matrix[:, :, new_classroom, class_to_change.hour, class_to_change.day - 1].any()):
                         continue
 
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][class_to_change.day - 1] = False
@@ -90,8 +99,8 @@ class Solver:
                 case 'hour':
                     new_hour = random.randint(0, self.problem_instance.time_slots_num - 1)
                     if (new_hour == class_to_change.hour
-                            or any(class_matrix[class_to_change.teacher, :, :, new_hour, class_to_change.day - 1])
-                            or any(class_matrix[:, :, class_to_change.classroom, new_hour, class_to_change.day - 1])):
+                            or class_matrix[class_to_change.teacher, :, :, new_hour, class_to_change.day - 1].any()
+                            or class_matrix[:, :, class_to_change.classroom, new_hour, class_to_change.day - 1].any()):
                         continue
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][class_to_change.day - 1] = False
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][new_hour, class_to_change.day - 1] = True
@@ -99,8 +108,8 @@ class Solver:
                 case 'day':
                     new_day = random.randint(1, 5)
                     if (new_day == class_to_change.day
-                            or any(class_matrix[class_to_change.teacher, :, :, class_to_change.hour, new_day - 1])
-                            or any(class_matrix[:, :, class_to_change.classroom, class_to_change.hour, new_day - 1])):
+                            or class_matrix[class_to_change.teacher, :, :, class_to_change.hour, new_day - 1].any()
+                            or class_matrix[:, :, class_to_change.classroom, class_to_change.hour, new_day - 1].any()):
                             continue
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][class_to_change.day - 1] = False
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][new_day - 1] = True
