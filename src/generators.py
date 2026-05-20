@@ -134,8 +134,8 @@ def main(problem: ProblemInstance, filename: str, want: int = 100, max_tries: in
     tries = 0
     while len(seen) < want and tries < max_tries:
         tries += 1
-        generator = OrdinalGenerator()
-        sol = generator.generate(problem)
+        generator = OrdinalGenerator(problem)
+        sol = generator.generate()
         if sol is None:
             continue
 
@@ -148,5 +148,3 @@ def main(problem: ProblemInstance, filename: str, want: int = 100, max_tries: in
             f.write(key + "\n")
 
     print(f"Saved {len(seen)} unique solutions in {tries} attempts.")
-
-
