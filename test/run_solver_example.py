@@ -1,6 +1,6 @@
 from src import generators
 from src.problem_instance import ProblemInstance
-from src.solver import Solver
+from src.geneticsolver import GeneticSolver
 from src.validator import validate_solution
 
 teacher_num = 7
@@ -51,7 +51,7 @@ initial_solution = generator.generate()
 
 print("Początkowe rozwiązanie wygenerowane.")
 
-solver = Solver(problem_instance)
+solver = GeneticSolver(problem_instance)
 
 print(f"Koszt początkowego rozwiązania: {problem_instance.cost_function(initial_solution)}")
 print("Rozpoczynam optymalizację...")

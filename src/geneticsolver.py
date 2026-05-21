@@ -5,7 +5,7 @@ from src.problem_instance import ProblemInstance, Class
 from src.validator import validate_solution
 
 
-class Solver:
+class GeneticSolver:
     def __init__(self, initial_problem: ProblemInstance):
         self.problem_instance = initial_problem
 
