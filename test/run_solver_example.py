@@ -1,6 +1,6 @@
 from src import generators
 from src.problem_instance import ProblemInstance
-from src.geneticsolver import GeneticSolver
+from src.solvers.genetic import GeneticSolver
 from src.validator import validate_solution
 
 teacher_num = 7
