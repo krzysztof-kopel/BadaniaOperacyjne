@@ -301,11 +301,11 @@ class GADashboard(tk.Tk):
         btn_frame.pack(side="right")
 
         # ── file open ──
-        tk.Button(btn_frame, text="📂  OPEN FILE", command=self._open_file,
-                  bg=ACCENT3, fg=BG, relief="flat",
+        tk.Button(btn_frame, text="OPEN FILE", command=self._open_file,
+                  bg='#fff', fg=BG, relief="flat",
                   font=("Courier New", 9, "bold"),
                   padx=14, pady=5, cursor="hand2",
-                  activebackground=ACCENT3, activeforeground=BG).pack(side="left", padx=4)
+                  activebackground='#888', activeforeground=BG).pack(side="left", padx=4)
 
         self.btn_run = tk.Button(btn_frame, text="▶  RUN", command=self._toggle,
                                  bg=ACCENT, fg="white", relief="flat",
@@ -349,14 +349,14 @@ class GADashboard(tk.Tk):
         self._build_violations_panel(container)
         self._build_objective_chart(container)
         self._build_teacher_panel(container)
-        self._build_diversity_panel(container)
+        # self._build_diversity_panel(container)
 
     def _build_kpi_row(self, parent):
         kpis = [
-            ("BEST FITNESS",   "0.00",  ACCENT,  "best_lbl"),
-            ("MEAN FITNESS",   "0.00",  TEXT,     "mean_lbl"),
-            ("FEASIBLE",       "0 %",   GREEN,    "feasible_lbl"),
-            ("STAGNATION",     "0 gen", YELLOW,   "stag_lbl"),
+            ("Funkcja kosztu (BEST)",   "0.00",  ACCENT,  "best_lbl"),
+            ("Średnia funkcja kosztu (MEAN)",   "0.00",  TEXT,     "mean_lbl"),
+            # ("FEASIBLE",       "0 %",   GREEN,    "feasible_lbl"),
+            ("Pokolenie",     "0 pokolenie", YELLOW,   "stag_lbl"),
         ]
         for i, (title, val, color, attr) in enumerate(kpis):
             card = make_card(parent, 0, i, title=title)
@@ -366,7 +366,7 @@ class GADashboard(tk.Tk):
             setattr(self, attr, lbl)
 
     def _build_fitness_chart(self, parent):
-        card = make_card(parent, 1, 0, colspan=2, title="Fitness History")
+        card = make_card(parent, 1, 0, colspan=2, title="Historia funkcji kosztu")
         if HAS_MPL:
             self.fig_fit = Figure(figsize=(1, 1), dpi=90, facecolor=PANEL)
             self.ax_fit  = self.fig_fit.add_subplot(111)
@@ -382,7 +382,7 @@ class GADashboard(tk.Tk):
             self._no_mpl_label(card)
 
     def _build_violations_panel(self, parent):
-        card = make_card(parent, 1, 2, title="Constraint Violations (best)")
+        card = make_card(parent, 1, 2, title="Kolizje")
         self.violation_labels = {}
         self.violation_bars   = {}
         vnames = ["Teacher-Subject", "Room-Subject", "Teacher Collision",
@@ -398,13 +398,13 @@ class GADashboard(tk.Tk):
         self.total_v_lbl = stat_label(card, "TOTAL VIOLATIONS", "0", color=RED)
 
     def _build_objective_chart(self, parent):
-        card = make_card(parent, 1, 3, title="Objective Decomposition")
+        card = make_card(parent, 2, 2, title="Dekompozycja funkcji kosztu")
         if HAS_MPL:
             self.fig_obj = Figure(figsize=(1, 1), dpi=90, facecolor=PANEL)
             self.ax_obj  = self.fig_obj.add_subplot(111)
             self._style_ax(self.ax_obj)
             self.line_pensum,  = self.ax_obj.plot([], [], color=ACCENT2, lw=1.5, label="Pensum Δ²")
-            self.line_freeday, = self.ax_obj.plot([], [], color=ACCENT3, lw=1.5, label="Free Days (λ)")
+            self.line_freeday, = self.ax_obj.plot([], [], color=ACCENT3, lw=1.5, label="Dni wolne (λ)")
             self.ax_obj.legend(fontsize=7, facecolor=PANEL, edgecolor=BORDER,
                                labelcolor=TEXT, loc="upper right")
             self.canvas_obj = FigureCanvasTkAgg(self.fig_obj, master=card)
@@ -413,9 +413,9 @@ class GADashboard(tk.Tk):
             self._no_mpl_label(card)
 
     def _build_teacher_panel(self, parent):
-        card = make_card(parent, 2, 0, colspan=2, title="Per-Teacher Statistics")
+        card = make_card(parent, 2, 0, colspan=2, title="Statystyki nauczycieli")
 
-        cols = ("Teacher", "Pensum Δ", "Free Days", "Violations")
+        cols = ("Nauczyciel", "Pensum Δ", "Dni wolne", "Kolizje")
         style = ttk.Style()
         style.theme_use("default")
         style.configure("GA.Treeview",
@@ -442,34 +442,34 @@ class GADashboard(tk.Tk):
         self.tree.tag_configure("bad",     foreground=RED)
         self.tree.tag_configure("neutral", foreground=TEXT)
 
-    def _build_diversity_panel(self, parent):
-        card = make_card(parent, 2, 2, title="Population Health")
+    # def _build_diversity_panel(self, parent):
+    #     card = make_card(parent, 2, 2, title="Population Health")
 
-        self.diversity_lbl   = stat_label(card, "Diversity Index",   "0.00", ACCENT3)
-        self.pop_collapse_lbl= stat_label(card, "Population Collapse","No",  GREEN)
-        tk.Frame(card, bg=PANEL, height=4).pack()
-        self.div_bar = mini_bar(card, 0, max_value=1.0, color=ACCENT3, height=8)
+    #     self.diversity_lbl   = stat_label(card, "Diversity Index",   "0.00", ACCENT3)
+    #     self.pop_collapse_lbl= stat_label(card, "Population Collapse","No",  GREEN)
+    #     tk.Frame(card, bg=PANEL, height=4).pack()
+    #     self.div_bar = mini_bar(card, 0, max_value=1.0, color=ACCENT3, height=8)
 
-        ttk.Separator(card, orient="horizontal").pack(fill="x", pady=6)
-        tk.Label(card, text="GENERATION COUNTER", bg=PANEL, fg=TEXT_DIM,
-                 font=("Courier New", 8, "bold"), padx=10).pack(anchor="w")
-        self.gen_lbl = tk.Label(card, text="0", bg=PANEL, fg=ACCENT,
-                                font=("Courier New", 28, "bold"))
-        self.gen_lbl.pack(pady=(2, 8))
+    #     ttk.Separator(card, orient="horizontal").pack(fill="x", pady=6)
+    #     tk.Label(card, text="GENERATION COUNTER", bg=PANEL, fg=TEXT_DIM,
+    #              font=("Courier New", 8, "bold"), padx=10).pack(anchor="w")
+    #     self.gen_lbl = tk.Label(card, text="0", bg=PANEL, fg=ACCENT,
+    #                             font=("Courier New", 28, "bold"))
+    #     self.gen_lbl.pack(pady=(2, 8))
 
-        card2 = make_card(parent, 2, 3, title="Convergence")
-        if HAS_MPL:
-            self.fig_div = Figure(figsize=(1, 1), dpi=90, facecolor=PANEL)
-            self.ax_div  = self.fig_div.add_subplot(111)
-            self._style_ax(self.ax_div)
-            self.line_div, = self.ax_div.plot([], [], color=ACCENT3, lw=1.5, label="Diversity")
-            self.ax_div.set_ylim(0, 1)
-            self.ax_div.legend(fontsize=7, facecolor=PANEL, edgecolor=BORDER,
-                               labelcolor=TEXT, loc="upper right")
-            self.canvas_div = FigureCanvasTkAgg(self.fig_div, master=card2)
-            self.canvas_div.get_tk_widget().pack(fill="both", expand=True, padx=4, pady=4)
-        else:
-            self._no_mpl_label(card2)
+        # card2 = make_card(parent, 2, 3, title="Convergence")
+        # if HAS_MPL:
+        #     self.fig_div = Figure(figsize=(1, 1), dpi=90, facecolor=PANEL)
+        #     self.ax_div  = self.fig_div.add_subplot(111)
+        #     self._style_ax(self.ax_div)
+        #     self.line_div, = self.ax_div.plot([], [], color=ACCENT3, lw=1.5, label="Diversity")
+        #     self.ax_div.set_ylim(0, 1)
+        #     self.ax_div.legend(fontsize=7, facecolor=PANEL, edgecolor=BORDER,
+        #                        labelcolor=TEXT, loc="upper right")
+        #     self.canvas_div = FigureCanvasTkAgg(self.fig_div, master=card2)
+        #     self.canvas_div.get_tk_widget().pack(fill="both", expand=True, padx=4, pady=4)
+        # else:
+        #     self._no_mpl_label(card2)
 
     def _build_status_bar(self):
         bar = tk.Frame(self, bg=BORDER, height=22)
@@ -489,9 +489,9 @@ class GADashboard(tk.Tk):
         # KPIs
         self.best_lbl.config(text=f"{data['best']:.1f}")
         self.mean_lbl.config(text=f"{data['mean']:.1f}")
-        self.feasible_lbl.config(text=f"{data['feasible_pct']} %",
-            fg=GREEN if data["feasible_pct"] > 60 else (YELLOW if data["feasible_pct"] > 30 else RED))
-        self.stag_lbl.config(text=f"{data['stagnation']} gen",
+        # self.feasible_lbl.config(text=f"{data['feasible_pct']} %",
+        #     fg=GREEN if data["feasible_pct"] > 60 else (YELLOW if data["feasible_pct"] > 30 else RED))
+        self.stag_lbl.config(text=f"{data['stagnation']} pokolenie",
             fg=RED if data["stagnation"] > 20 else YELLOW if data["stagnation"] > 10 else GREEN)
 
         # Violations
@@ -516,13 +516,13 @@ class GADashboard(tk.Tk):
                 tags=(tag,))
 
         # Diversity
-        div = data["diversity"]
-        self.diversity_lbl.config(text=f"{div:.3f}")
-        self.pop_collapse_lbl.config(
-            text="YES" if div < 0.05 else "No",
-            fg=RED if div < 0.05 else GREEN)
-        self.div_bar._draw(div, 1.0)
-        self.gen_lbl.config(text=str(gen))
+        # div = data["diversity"]
+        # self.diversity_lbl.config(text=f"{div:.3f}")
+        # self.pop_collapse_lbl.config(
+        #     text="YES" if div < 0.05 else "No",
+        #     fg=RED if div < 0.05 else GREEN)
+        # self.div_bar._draw(div, 1.0)
+        # self.gen_lbl.config(text=str(gen))
 
         # Charts
         if HAS_MPL:
@@ -540,14 +540,13 @@ class GADashboard(tk.Tk):
             self.ax_obj.relim(); self.ax_obj.autoscale_view()
             self.canvas_obj.draw_idle()
 
-            self.line_div.set_data(xs, ga.diversity_history)
-            self.ax_div.relim(); self.ax_div.autoscale_view()
-            self.canvas_div.draw_idle()
+            # self.line_div.set_data(xs, ga.diversity_history)
+            # self.ax_div.relim(); self.ax_div.autoscale_view()
+            # self.canvas_div.draw_idle()
 
         self.status_lbl.config(
-            text=f"Generation {gen}  |  Best J = {data['best']:.2f}"
-                 f"  |  Total violations = {total_v}"
-                 f"  |  Feasible = {data['feasible_pct']}%")
+            text=f"Pokolenie {gen}  |  Best J = {data['best']:.2f}"
+                 f"  |  Total violations = {total_v}")
 
     def _open_file(self):
         from tkinter import filedialog
@@ -589,7 +588,7 @@ class GADashboard(tk.Tk):
         if self._after_id:
             self.after_cancel(self._after_id)
             self._after_id = None
-        self.btn_run.config(text="▶  RUN", bg=ACCENT)
+        self.btn_run.config(text="START", bg=ACCENT)
 
     def _toggle(self):
         if self.ga is None:
@@ -598,7 +597,7 @@ class GADashboard(tk.Tk):
             self._stop()
         else:
             self.running = True
-            self.btn_run.config(text="⏸  PAUSE", bg=ACCENT2)
+            self.btn_run.config(text="PAUZA", bg=ACCENT2)
             self._tick()
 
     def _reset(self):
