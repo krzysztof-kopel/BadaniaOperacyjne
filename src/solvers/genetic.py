@@ -1,26 +1,13 @@
 import numpy as np
 import random
 
-from src.solvers.solver import Solver
 from src.problem_instance import ProblemInstance, Class
 from src.validator import validate_solution
 
 
-class GeneticSolver(Solver):
-    def __init__(self, problem_instance: ProblemInstance):
-        super().__init__(problem_instance)
-
-    def solve(self) -> list[Class] | None:
-        """
-        Implementacja solve z oryginalnej klasy Solver.
-        """
-        initial_solution = self.problem_instance.best_solution
-        if initial_solution is None:
-            raise ValueError("Initial solution is not set for this problem instance")
-
-
-        optimized_solution = self.optimize(initial_solution=initial_solution)
-        return optimized_solution
+class GeneticSolver:
+    def __init__(self, initial_problem: ProblemInstance):
+        self.problem_instance = initial_problem
 
     def optimize(self, initial_solution: list[Class], generations: int=10, children_num: int=5, accept_worse: bool=True,
                  verbose: bool=False) -> list[Class]:
@@ -128,7 +115,7 @@ class GeneticSolver(Solver):
                     class_matrix[class_to_change.teacher][class_to_change.subject][class_to_change.classroom][class_to_change.hour][new_day - 1] = True
                     new_solution = [c if c != class_to_change else Class(c.teacher, c.subject , c.classroom, c.hour, new_day) for c in current_solution]
 
-            if new_solution and (accept_worse or self.problem_instance.cost_function(new_solution) <= self.problem_instance.cost_function(current_solution)):
+            if accept_worse or self.problem_instance.cost_function(new_solution) <= self.problem_instance.cost_function(current_solution):
                 new_solutions.append(new_solution)
 
         return new_solutions
