@@ -1,4 +1,4 @@
-from Class import Class
+from src.class_def import Class
 
 
 class ProblemInstance:
@@ -76,4 +76,25 @@ class ProblemInstance:
         self.classroom_subject[classroom].append(subject)
 
     def __str__(self):
-        return f"ProblemInstance(teacher_num={self.teacher_num}, subjects_num={self.subjects_num}, classrooms_num={self.classrooms_num}, time_slots_num={self.time_slots_num})"
+        title = f"ProblemInstance(teacher_num={self.teacher_num}, subjects_num={self.subjects_num}, classrooms_num={self.classrooms_num}, time_slots_num={self.time_slots_num})"
+        if self.best_solution is None:
+            return title
+        return title + "\n".join(self.best_solution)
+
+    def cost_function(self, solution: list[Class]) -> float:
+        """
+        Liczy funkcję kosztu dla danego rozwiązania.
+        :param solution: Plan zajęć.
+        :return: Wartość funkcji kosztu dla zadanego planu.
+        """
+        teacher_counters = [0] * self.teacher_num
+        teacher_day_lessons = [[0] * 5 for _ in range(self.teacher_num)]
+        for cls in solution:
+            teacher_counters[cls.teacher] += 1
+            teacher_day_lessons[cls.teacher][cls.day - 1] += 1
+
+        cost = 0
+        for t in range(self.teacher_num):
+            cost += (teacher_counters[t] - self.teacher_pensum[t]) ** 2 + self.lambda1 * len([d for d in range(5) if teacher_day_lessons[t][d] == 0])
+
+        return cost
