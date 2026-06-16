@@ -1,7 +1,6 @@
 from random import choice
 from src.validator import *
 from src.utils import encode_solution
-from copy import deepcopy
 import random
 
 MAX_ITER = int(10e6)
@@ -9,55 +8,49 @@ MAX_ITER = int(10e6)
 class RandomGenerator:
     def __init__(self, problem_instance: ProblemInstance):
         self.problemInstance = problem_instance
+
     def generate(self):
-        subjects_left_to_deal = dict()
-        for subject_num in range(self.problemInstance.subjects_num):
-            subjects_left_to_deal[subject_num] = self.problemInstance.subject_hours[subject_num]
+        subjects_left_to_deal = {
+            subject_num: self.problemInstance.subject_hours[subject_num]
+            for subject_num in range(self.problemInstance.subjects_num)
+            if self.problemInstance.subject_hours[subject_num] > 0
+        }
         solution = []
-        iteration_count = 0
-        while len(subjects_left_to_deal.keys()) > 0 or iteration_count > MAX_ITER:
-            print("Subjects left to deal:", sum(subjects_left_to_deal.values()))
-            print("Picking random subject")
+        # Zajętość zasobów trzymamy w zbiorach, aby unikać kosztownego
+        # przeszukiwania listy rozwiązań przy każdej decyzji.
+        occupied_classroom: set[tuple[int, int, int]] = set()  # (day, hour, classroom)
+        occupied_teacher: set[tuple[int, int, int]] = set()    # (day, hour, teacher)
+
+        while subjects_left_to_deal:
             subject = choice(list(subjects_left_to_deal))
-            print("Chose subject", subject)
             available_teachers = self.problemInstance.subject_teacher[subject]
-            print("Available teachers for this subject:", available_teachers)
+            if not available_teachers:
+                return None
             teacher = choice(available_teachers)
-            print("Chose teacher:", teacher)
-            options = self.get_available_option_for_classes(solution, subject, teacher)
-            print(f"Found {len(options)} valid options")
-            if len(options) == 0:
-                print(f"Reached a deadend during generation! Try redrawing.")
+            options = self.get_available_option_for_classes(
+                occupied_classroom, occupied_teacher, subject, teacher
+            )
+            if not options:
                 return None
             option = choice(options)
-            print(f"Chose day {option.day} in time slot number {option.hour}")
+            occupied_classroom.add((option.day, option.hour, option.classroom))
+            occupied_teacher.add((option.day, option.hour, option.teacher))
             subjects_left_to_deal[subject] -= 1
-            self.clear_fully_assigned_subjects(subjects_left_to_deal)
+            if subjects_left_to_deal[subject] == 0:
+                del subjects_left_to_deal[subject]
             solution.append(option)
-        if len(subjects_left_to_deal.keys()) > 0:
-            print(f"Generator made too many iterations (more than {MAX_ITER} iterations)")
-            return None
         return solution
 
-    def get_available_option_for_classes(self, current_solution, subject, teacher):
+    def get_available_option_for_classes(self, occupied_classroom, occupied_teacher, subject, teacher):
         available_options = []
         for day in range(1, 6):
             for time_slot in range(self.problemInstance.time_slots_num):
+                if (day, time_slot, teacher) in occupied_teacher:
+                    continue
                 for classroom in self.problemInstance.subject_classroom[subject]:
-                    teachers_assigned_to_slot = 0
-                    for teacher_in_slot in range(self.problemInstance.teacher_num):
-                        for subject_in_slot in range(self.problemInstance.subjects_num):
-                            if Class(teacher_in_slot, subject_in_slot, classroom, time_slot, day) in current_solution:
-                                teachers_assigned_to_slot += 1
-                    if teachers_assigned_to_slot == 0:
+                    if (day, time_slot, classroom) not in occupied_classroom:
                         available_options.append(Class(teacher, subject, classroom, time_slot, day))
         return available_options
-
-    @staticmethod
-    def clear_fully_assigned_subjects(subjects: dict):
-       for subject_num in list(subjects):
-           if subjects[subject_num] == 0:
-            del subjects[subject_num]
 
 
 class OrdinalGenerator:
@@ -65,8 +58,8 @@ class OrdinalGenerator:
         self.problem_instance = problem_instance
 
     def generate(self):
-        instance = deepcopy(self.problem_instance)
-        subject_hours = deepcopy(instance.subject_hours)
+        instance = self.problem_instance
+        subject_hours = list(instance.subject_hours)
         solution = []
         days = range(1, 6)
         slots = [(d, h) for d in days for h in range(instance.time_slots_num)]
@@ -90,11 +83,14 @@ class OrdinalGenerator:
             if not classrooms:
                 return None
 
+            # Zamiast losować slot do skutku (kosztowne na ciasnych instancjach),
+            # przeglądamy sloty w losowej kolejności i bierzemy pierwszy wolny.
+            # Dzięki temu pojedyncza próba jest O(liczba slotów), a nie O(MAX_ITER).
             placed = False
-            for _ in range(MAX_ITER):
-                day, hour = random.choice(slots)
+            shuffled_slots = slots[:]
+            random.shuffle(shuffled_slots)
+            for day, hour in shuffled_slots:
                 day_idx = day - 1
-
                 if not teacher_slots[teacher][day_idx][hour]:
                     continue
 
