@@ -8,8 +8,10 @@ from src.validator import validate_solution, Validation
 
 
 class GeneticSolver(Solver):
-    def __init__(self, problem_instance: ProblemInstance):
+    def __init__(self, problem_instance: ProblemInstance, seed: int | None = 0):
         super().__init__(problem_instance)
+        random.seed(seed)
+        np.random.seed(seed)
 
     def solve(self) -> list[Class] | None:
         """
