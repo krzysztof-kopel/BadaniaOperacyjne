@@ -50,12 +50,27 @@ def _write_jsonl(path: Path, rows: Iterable[BenchmarkRow]) -> None:
         for row in rows:
             f.write(json.dumps(asdict(row), ensure_ascii=False) + "\n")
 
-def _write_json(path: Path, rows: list[BenchmarkRow]) -> None:
+
+def _append_json(path: Path, rows: list[BenchmarkRow]) -> None:
     _ensure_parent(path)
+    existing: list[Any] = []
+    if path.exists() and path.stat().st_size > 0:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, list):
+            raise ValueError(f"Expected JSON array in {path}")
+        existing = data
+    combined = existing + [asdict(r) for r in rows]
     path.write_text(
-        json.dumps([asdict(r) for r in rows], ensure_ascii=False, indent=2) + "\n",
+        json.dumps(combined, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+
+
+def _write_results(path: Path, rows: list[BenchmarkRow]) -> None:
+    if path.suffix.lower() == ".jsonl":
+        _write_jsonl(path, rows)
+    else:
+        _append_json(path, rows)
 
 
 def run_benchmark(
@@ -177,7 +192,7 @@ def run_benchmark(
                 else:
                     from src.solvers.genetic import GeneticSolver
 
-                    ga = GeneticSolver(inst)
+                    ga = GeneticSolver(inst, seed=run_seed)
                     solution = ga.optimize(
                         init_sol,
                         generations=generations,
@@ -228,7 +243,7 @@ def run_benchmark(
 
     if output_path is not None and rows:
         out = Path(output_path)
-        _write_json(out, rows)
+        _write_results(out, rows)
 
     return rows
 
@@ -243,7 +258,7 @@ def benchmark_algorithm(argv: list[str] | None = None) -> int:
     parser.add_argument("--solver", required=True, choices=["antcolony", "lp", "genetic"])
     parser.add_argument("--repeat", type=int, default=1)
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--output", default=None, help="Optional output file (.jsonl append, or .json overwrite).")
+    parser.add_argument("--output", default=None, help="Optional output file (.json or .jsonl, results are appended).")
     parser.add_argument(
         "--output-dir",
         default=None,
