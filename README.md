@@ -6,9 +6,6 @@ Jan Gawroński, Krzysztof Kopel, Witold Nieć, Jakub Szewczyk
 Problem optymalizacyjny, rozwiązywany w ramach laboratoriów z przedmiotu "Badania Operacyjne" w semestrze letnim 25/26 - optymalizacja planu zajęć na uczelni.
 
 ---
-Model matematyczny: [LINK](https://github.com/krzysztof-kopel/BadaniaOperacyjne/blob/main/model.pdf) 
-
----
 ## Uruchomienie interfejsu graficznego: 
 Aplikacja graficzna wykorzystuje framework Streamlit, który uruchamia aplikację w przeglądarce. Do konfiguracji i uruchomienia programu wymagana jest biblioteka `uv` (menedżer projektów i zależności Pythona).
 
