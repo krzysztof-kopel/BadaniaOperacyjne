@@ -82,7 +82,6 @@ def plot_teacher_timetables(classes: list[Class], output: str) -> None:
     for extra in range(teacher_num, len(axes)):
         axes[extra].axis("off")
 
-
     legend_handles = [patches.Patch(color=colors[s], label=f"Subject {s}") for s in range(subjects_num)]
     if legend_handles:
         fig.legend(handles=legend_handles, loc="lower center", ncol=min(subjects_num, 6), bbox_to_anchor=(0.5, 0.02))
