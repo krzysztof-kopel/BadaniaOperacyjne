@@ -76,8 +76,6 @@ def plot_teacher_timetables(
     teacher_num = teacher_num if teacher_num is not None else derived_teacher
     subjects_num = subjects_num if subjects_num is not None else derived_subjects
     time_slots_num = time_slots_num if time_slots_num is not None else derived_slots
-    # Keep dimensions consistent even if the instance under-reports the range
-    # actually present in the solution.
     teacher_num = max(teacher_num, derived_teacher)
     subjects_num = max(subjects_num, derived_subjects)
     time_slots_num = max(time_slots_num, derived_slots)
@@ -162,7 +160,6 @@ def load_instance(spec: str) -> ProblemInstance:
 
 
 def generate_solutions(instance: ProblemInstance, want: int, max_tries: int = 20000) -> list[str]:
-    """Generate up to ``want`` unique valid solutions, encoded one per line."""
     from src.generators import OrdinalGenerator
 
     seen: list[str] = []
@@ -231,8 +228,6 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     instance = load_instance(args.instance) if args.instance else None
-
-    # Resolve the list of candidate solution lines.
     if args.solutions:
         if os.path.exists(args.solutions):
             lines = read_solution_lines(args.solutions)
@@ -258,7 +253,6 @@ def main(argv: list[str] | None = None) -> None:
         if not lines:
             parser.error("Failed to generate any valid solution for the given instance.")
     else:
-        # No instance and no solutions file: fall back to the built-in demo.
         lines = [DEMO_SOLUTION]
 
     solution_line, chosen = select_line(lines, args.line, args.random)
