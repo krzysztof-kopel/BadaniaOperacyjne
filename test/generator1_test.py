@@ -15,7 +15,7 @@ for i in range(2, SUBJECT_COUNT, 2):
     problemInstance.add_teacher_subject_pair(i//2, i - 1)
 generator = OrdinalGenerator(problemInstance)
 
-solution = generator.generate()
+solution = generator.generate_one()
 solution.sort(key=lambda x: 100 * x.day + x.hour)
 
 print("Wygenerowany plan:")
