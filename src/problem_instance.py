@@ -24,6 +24,8 @@ class ProblemInstance:
         self.teacher_subject = {t: [] for t in range(teacher_num)}
         self.subject_teacher = {s: [] for s in range(subjects_num)}
 
+        self.cost_function_calls = 0
+
         if default_classrooms:
             self.subject_classroom = {s: [c for c in range(classrooms_num)] for s in range(subjects_num)}
             self.classroom_subject = {c: [s for s in range(subjects_num)] for c in range(classrooms_num)}
@@ -87,6 +89,7 @@ class ProblemInstance:
         :param solution: Plan zajęć.
         :return: Wartość funkcji kosztu dla zadanego planu.
         """
+        self.cost_function_calls += 1
         teacher_counters = [0] * self.teacher_num
         teacher_day_lessons = [[0] * 5 for _ in range(self.teacher_num)]
         for cls in solution:
@@ -98,3 +101,6 @@ class ProblemInstance:
             cost += (teacher_counters[t] - self.teacher_pensum[t]) ** 2 + self.lambda1 * len([d for d in range(5) if teacher_day_lessons[t][d] == 0])
 
         return cost
+
+    def reset_cost_function_calls(self):
+        self.cost_function_calls = 0

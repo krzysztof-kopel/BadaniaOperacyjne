@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "altair>=6.2.1",
+    "notebook>=7.5.7",
     "numpy==2.4.6",
     "pandas>=3.0.3",
     "pulp",

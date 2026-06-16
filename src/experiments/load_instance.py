@@ -70,22 +70,6 @@ def _optional_int_list(data: dict[str, Any], key: str) -> list[int] | None:
 
 
 def load_instance(path: str | Path) -> LoadedInstance:
-    """
-    Load a benchmark instance from JSON and construct a ProblemInstance.
-
-    Expected JSON schema (fields not mentioned are ignored):
-    - instance_id: str (optional; defaults to filename stem)
-    - teacher_num: int (required)
-    - subjects_num: int (required)
-    - classrooms_num: int (required)
-    - time_slots_num: int (required)
-    - lambda_1: int (optional; defaults to -1)
-    - default_classrooms: bool (optional; defaults to true)
-    - pensum_list: list[int] (optional; defaults to ProblemInstance default)
-    - subject_hours: list[int] (optional; defaults to ProblemInstance default)
-    - teacher_subject_pairs: list[[teacher:int, subject:int]] (required)
-    - subject_classroom_pairs: list[[subject:int, classroom:int]] (optional)
-    """
     p = Path(path)
     raw = json.loads(p.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
