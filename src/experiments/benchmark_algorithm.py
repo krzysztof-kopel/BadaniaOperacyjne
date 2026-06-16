@@ -23,6 +23,7 @@ class BenchmarkRow:
     ok: bool
     validation: str
     cost: float | None
+    cost_calls: int
     runtime_s: float
     params_json: str
     solution_encoding: str | None
@@ -98,6 +99,8 @@ def run_benchmark(
     accept_worse: bool = False,
     generator: str = "ordinal",
     gen_max_tries: int = 2000,
+    ga_time_budget_s: float | None = 10.0,
+    gen_time_budget_s: float | None = 20.0,
 ) -> list[BenchmarkRow]:
 
     if solver not in {"antcolony", "lp", "genetic"}:
@@ -126,6 +129,10 @@ def run_benchmark(
         solution: list[Class] | None = None
         validation: Any = "NOT_RUN"
         cost: float | None = None
+        # Liczba wywołań funkcji kosztu wykonanych przez sam algorytm (bez
+        # dodatkowej ewaluacji wykonywanej niżej tylko po to, by zapisać koszt).
+        search_cost_calls: int | None = None
+        inst.reset_cost_function_calls()
 
         try:
             if solver == "antcolony":
@@ -141,6 +148,7 @@ def run_benchmark(
                     seed=run_seed,
                 )
                 solution = solver_obj.solve()
+                search_cost_calls = inst.cost_function_calls
                 if solution is not None:
                     cost = float(solver_obj.evaluate_solution(solution))
                 params.update(
@@ -160,6 +168,7 @@ def run_benchmark(
 
                 solver_obj = LinearProgrammingSolver(inst, time_limit=time_limit)
                 solution = solver_obj.solve()
+                search_cost_calls = inst.cost_function_calls
                 if solution is not None:
                     cost = float(solver_obj.evaluate_solution(solution))
                 params.update({"time_limit": time_limit})
@@ -172,20 +181,23 @@ def run_benchmark(
                     from src.generators import OrdinalGenerator
 
                     gen = OrdinalGenerator(inst)
-                    init_sol = None
-                    for _ in range(gen_max_tries):
-                        init_sol = gen.generate()
-                        if init_sol is not None:
-                            break
                 else:
                     from src.generators import RandomGenerator
 
                     gen = RandomGenerator(inst)
-                    init_sol = None
-                    for _ in range(gen_max_tries):
-                        init_sol = gen.generate()
-                        if init_sol is not None:
-                            break
+
+                # Ograniczamy generację startową zarówno liczbą prób, jak i czasem,
+                # żeby trudne (ciasne) instancje nie zawieszały benchmarku.
+                init_sol = None
+                gen_deadline = (
+                    None if gen_time_budget_s is None else time.perf_counter() + gen_time_budget_s
+                )
+                for _ in range(gen_max_tries):
+                    init_sol = gen.generate()
+                    if init_sol is not None:
+                        break
+                    if gen_deadline is not None and time.perf_counter() > gen_deadline:
+                        break
 
                 if init_sol is None:
                     solution = None
@@ -199,7 +211,9 @@ def run_benchmark(
                         children_num=children_num,
                         accept_worse=accept_worse,
                         verbose=not quiet,
+                        time_budget_s=ga_time_budget_s,
                     )
+                    search_cost_calls = inst.cost_function_calls
                     cost = float(inst.cost_function(solution))
 
                 params.update(
@@ -209,6 +223,7 @@ def run_benchmark(
                         "generations": generations,
                         "children_num": children_num,
                         "accept_worse": accept_worse,
+                        "ga_time_budget_s": ga_time_budget_s,
                     }
                 )
 
@@ -225,6 +240,11 @@ def run_benchmark(
             solution = None
 
         runtime_s = time.perf_counter() - t0
+        cost_calls = int(
+            search_cost_calls
+            if search_cost_calls is not None
+            else getattr(inst, "cost_function_calls", 0)
+        )
         solution_encoding = None if solution is None else encode_solution(_sorted_solution(solution))
 
         rows.append(
@@ -235,6 +255,7 @@ def run_benchmark(
                 ok=ok,
                 validation=_validation_to_str(validation),
                 cost=cost,
+                cost_calls=cost_calls,
                 runtime_s=runtime_s,
                 params_json=json.dumps(params, ensure_ascii=False),
                 solution_encoding=solution_encoding,
@@ -281,11 +302,13 @@ def benchmark_algorithm(argv: list[str] | None = None) -> int:
     parser.add_argument("--accept-worse", action="store_true", default=False)
     parser.add_argument("--generator", choices=["ordinal", "random"], default="ordinal")
     parser.add_argument("--gen-max-tries", type=int, default=2000)
+    parser.add_argument("--ga-time-budget-s", type=float, default=10.0)
+    parser.add_argument("--gen-time-budget-s", type=float, default=20.0)
 
     args = parser.parse_args(argv)
 
     run_benchmark(
-        instance_path=args.instance,
+        loaded=load_instance(args.instance),
         solver=args.solver,
         repeat=args.repeat,
         seed=args.seed,
@@ -305,6 +328,8 @@ def benchmark_algorithm(argv: list[str] | None = None) -> int:
         accept_worse=args.accept_worse,
         generator=args.generator,
         gen_max_tries=args.gen_max_tries,
+        ga_time_budget_s=args.ga_time_budget_s,
+        gen_time_budget_s=args.gen_time_budget_s,
     )
     return 0
 
@@ -313,7 +338,7 @@ def benchmark_configuration(algorithms, instances, seed):
 
     for algorithm in algorithms:
         for instance in instances:
-            run_benchmark(instance_path=instance, solver=algorithm, )
+            run_benchmark(loaded=load_instance(instance), solver=algorithm, seed=seed)
 
 if __name__ == "__main__":
     raise SystemExit(benchmark_algorithm())
