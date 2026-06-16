@@ -66,8 +66,47 @@ def make_bigger_instance() -> ProblemInstance:
     return inst
 
 
+def make_dense_instance() -> ProblemInstance:
+
+    inst = ProblemInstance(
+        teacher_num=6,
+        subjects_num=8,
+        classrooms_num=2,
+        time_slots_num=5,
+        default_classrooms=True,
+        pensum_list=[7, 7, 7, 7, 8, 8],
+        subject_hours=[6, 6, 6, 6, 5, 5, 5, 5]
+    )
+
+    # t0: s0 s1 s2
+    for s in [0, 1, 2]:
+        inst.add_teacher_subject_pair(0, s)
+
+    # t1: s0 s3 s4
+    for s in [0, 3, 4]:
+        inst.add_teacher_subject_pair(1, s)
+
+    # t2: s1 s3 s5
+    for s in [1, 3, 5]:
+        inst.add_teacher_subject_pair(2, s)
+
+    # t3: s2 s4 s6
+    for s in [2, 4, 6]:
+        inst.add_teacher_subject_pair(3, s)
+
+    # t4: s5 s6 s7
+    for s in [5, 6, 7]:
+        inst.add_teacher_subject_pair(4, s)
+
+    # t5: s0 s2 s7
+    for s in [0, 2, 7]:
+        inst.add_teacher_subject_pair(5, s)
+
+    return inst
+
+
 if __name__ == "__main__":
-    inst = make_bigger_instance()
+    inst = make_dense_instance()
     print(inst)
     generator = RandomGenerator(inst)
     solution = generator.generate()
