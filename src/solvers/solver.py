@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 from src.class_def import Class
-from src.evaluator import evaluate_solution
 from src.problem_instance import ProblemInstance
 
 
@@ -14,4 +13,4 @@ class Solver(ABC):
         raise NotImplementedError
 
     def evaluate_solution(self, solution: list[Class]) -> float:
-        return evaluate_solution(solution, self.problem_instance)
+        return self.problem_instance.cost_function(solution)

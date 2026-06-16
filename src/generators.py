@@ -1,6 +1,4 @@
 from random import choice
-from typing import Optional
-
 from src.validator import *
 from src.utils import encode_solution
 from copy import deepcopy
@@ -63,14 +61,10 @@ class RandomGenerator:
 
 
 class OrdinalGenerator:
-    def __init__(self, problem_instance: ProblemInstance, filename: Optional[str] = None):
+    def __init__(self, problem_instance: ProblemInstance):
         self.problem_instance = problem_instance
-        if filename:
-            self.filename = filename
-        else:
-            self.filename = None
 
-    def generate_one(self):
+    def generate(self):
         instance = deepcopy(self.problem_instance)
         subject_hours = deepcopy(instance.subject_hours)
         solution = []
@@ -132,27 +126,25 @@ class OrdinalGenerator:
         sol_sorted = sorted(sol, key=lambda x: (x.day, x.hour, x.classroom, x.teacher, x.subject))
         return encode_solution(sol_sorted)
 
-    def generate(self, want: int = 100, max_tries: int = 20000, save_to_file=False):
-        open(self.filename, "w").close()
-        seen: set[str] = set()
-        tries = 0
-        while len(seen) < want and tries < max_tries:
-            tries += 1
-            sol = self.generate_one()
-            if sol is None:
-                continue
 
-            key = self.canonical_key(sol)
-            if key in seen:
-                continue
+# Zostawione na potrzeby testowania generatora 2
+def main(problem: ProblemInstance, filename: str, want: int = 100, max_tries: int = 20000):
+    open(filename, "w").close()
+    seen: set[str] = set()
+    tries = 0
+    while len(seen) < want and tries < max_tries:
+        tries += 1
+        generator = OrdinalGenerator(problem)
+        sol = generator.generate()
+        if sol is None:
+            continue
 
-            seen.add(key)
-            if save_to_file:
-                with open(self.filename, "a") as f:
-                    f.write(key + "\n")
+        key = generator.canonical_key(sol)
+        if key in seen:
+            continue
 
-        print(f"Found {len(seen)} unique solutions in {tries} attempts.")
-        return list(seen)
+        seen.add(key)
+        with open(filename, "a") as f:
+            f.write(key + "\n")
 
-
-
+    print(f"Saved {len(seen)} unique solutions in {tries} attempts.")
